@@ -5,14 +5,14 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1793506911861,
+      "when": 1793511494507,
       "tag": "0000_initial_products_table",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "7",
-      "when": 1793506927840,
+      "when": 1793511511707,
       "tag": "0001_evolve_products_inventory",
       "breakpoints": true
     }

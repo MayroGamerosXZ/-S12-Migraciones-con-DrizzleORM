@@ -1,9 +1,13 @@
 Add-Type -AssemblyName System.IO.Compression
 Add-Type -AssemblyName System.IO.Compression.FileSystem
+Add-Type -AssemblyName System.Drawing
 
-$docxPath = Join-Path $PSScriptRoot "..\Entregable_S12_Migraciones_DrizzleORM.docx"
-if (Test-Path $docxPath) {
-    Remove-Item $docxPath -Force
+$rootDir = (Get-Location).Path
+$screenshotsDir = Join-Path $rootDir "screenshots"
+$docxPath = Join-Path $rootDir "Entregable_S12_Migraciones_DrizzleORM.docx"
+
+if ([System.IO.File]::Exists($docxPath)) {
+    [System.IO.File]::Delete($docxPath)
 }
 
 function Escape-Xml([string]$text) {
@@ -140,96 +144,133 @@ $runs
 "@
 }
 
-function New-CaptureBox([string]$number, [string]$title, [string]$command, [string]$expectedDesc) {
+function New-CaptureWithImage([int]$imgIndex, [string]$number, [string]$title, [string]$command, [string]$expectedDesc) {
     $num = Escape-Xml $number
     $tit = Escape-Xml $title
     $cmd = Escape-Xml $command
     $desc = Escape-Xml $expectedDesc
+
+    $fileKey = ("captura_{0:D2}.png" -f $imgIndex)
+    $imgPath = Join-Path $screenshotsDir $fileKey
+    $cx = 5600000
+    $cy = 2400000
+    if ([System.IO.File]::Exists($imgPath)) {
+        $imgObj = [System.Drawing.Image]::FromFile($imgPath)
+        $cx = 5600000
+        $cy = [long]([Math]::Round(5600000.0 * $imgObj.Height / $imgObj.Width))
+        $imgObj.Dispose()
+    }
+    $relId = "rIdImg$imgIndex"
+
     return @"
 <w:tbl>
   <w:tblPr>
     <w:tblW w:w="5000" w:type="pct"/>
     <w:tblBorders>
-      <w:top w:val="dashed" w:sz="12" w:space="0" w:color="2563EB"/>
-      <w:left w:val="dashed" w:sz="12" w:space="0" w:color="2563EB"/>
-      <w:bottom w:val="dashed" w:sz="12" w:space="0" w:color="2563EB"/>
-      <w:right w:val="dashed" w:sz="12" w:space="0" w:color="2563EB"/>
+      <w:top w:val="single" w:sz="10" w:space="0" w:color="2563EB"/>
+      <w:left w:val="single" w:sz="10" w:space="0" w:color="2563EB"/>
+      <w:bottom w:val="single" w:sz="10" w:space="0" w:color="2563EB"/>
+      <w:right w:val="single" w:sz="10" w:space="0" w:color="2563EB"/>
     </w:tblBorders>
     <w:tblCellMar>
-      <w:top w:w="160" w:type="dxa"/>
-      <w:left w:w="200" w:type="dxa"/>
-      <w:bottom w:w="160" w:type="dxa"/>
-      <w:right w:w="200" w:type="dxa"/>
+      <w:top w:w="140" w:type="dxa"/>
+      <w:left w:w="160" w:type="dxa"/>
+      <w:bottom w:w="140" w:type="dxa"/>
+      <w:right w:w="160" w:type="dxa"/>
     </w:tblCellMar>
   </w:tblPr>
   <w:tr>
     <w:tc>
       <w:tcPr>
-        <w:shd w:val="clear" w:color="auto" w:fill="EFF6FF"/>
+        <w:shd w:val="clear" w:color="auto" w:fill="F8FAFC"/>
       </w:tcPr>
-      <w:p>
-        <w:pPr><w:spacing w:before="60" w:after="60"/></w:pPr>
-        <w:r>
-          <w:rPr>
-            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri"/>
-            <w:b/>
-            <w:color w:val="1E3A8A"/>
-            <w:sz w:val="24"/>
-          </w:rPr>
-          <w:t xml:space="preserve">📸 [$num] $tit</w:t>
-        </w:r>
-      </w:p>
       <w:p>
         <w:pPr><w:spacing w:before="40" w:after="40"/></w:pPr>
         <w:r>
           <w:rPr>
             <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri"/>
             <w:b/>
-            <w:color w:val="334155"/>
-            <w:sz w:val="20"/>
+            <w:color w:val="1E3A8A"/>
+            <w:sz w:val="23"/>
           </w:rPr>
-          <w:t xml:space="preserve">Comando a ejecutar: </w:t>
+          <w:t xml:space="preserve">📸 [$num] $tit</w:t>
+        </w:r>
+      </w:p>
+      <w:p>
+        <w:pPr><w:spacing w:before="20" w:after="40"/></w:pPr>
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri"/>
+            <w:b/>
+            <w:color w:val="334155"/>
+            <w:sz w:val="19"/>
+          </w:rPr>
+          <w:t xml:space="preserve">Comando ejecutado: </w:t>
         </w:r>
         <w:r>
           <w:rPr>
             <w:rFonts w:ascii="Consolas" w:hAnsi="Consolas"/>
             <w:color w:val="0F172A"/>
-            <w:sz w:val="19"/>
+            <w:sz w:val="18"/>
           </w:rPr>
           <w:t xml:space="preserve">$cmd</w:t>
         </w:r>
       </w:p>
       <w:p>
-        <w:pPr><w:spacing w:before="40" w:after="120"/></w:pPr>
+        <w:pPr><w:spacing w:before="20" w:after="80"/></w:pPr>
         <w:r>
           <w:rPr>
             <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri"/>
             <w:i/>
             <w:color w:val="475569"/>
-            <w:sz w:val="20"/>
+            <w:sz w:val="19"/>
           </w:rPr>
-          <w:t xml:space="preserve">Qué debe verse en la captura: $desc</w:t>
+          <w:t xml:space="preserve">Descripción de la evidencia: $desc</w:t>
         </w:r>
       </w:p>
       <w:p>
         <w:pPr>
           <w:jc w:val="center"/>
-          <w:spacing w:before="600" w:after="600"/>
+          <w:spacing w:before="80" w:after="80"/>
         </w:pPr>
         <w:r>
-          <w:rPr>
-            <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri"/>
-            <w:b/>
-            <w:color w:val="64748B"/>
-            <w:sz w:val="22"/>
-          </w:rPr>
-          <w:t>[ PEGA AQUÍ LA $num ]</w:t>
+          <w:drawing>
+            <wp:inline distT="0" distB="0" distL="0" distR="0">
+              <wp:extent cx="$cx" cy="$cy"/>
+              <wp:effectExtent l="0" t="0" r="0" b="0"/>
+              <wp:docPr id="$imgIndex" name="Imagen $imgIndex"/>
+              <wp:cNvGraphicFramePr>
+                <a:graphicFrameLocks noChangeAspect="1"/>
+              </wp:cNvGraphicFramePr>
+              <a:graphic>
+                <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                  <pic:pic>
+                    <pic:nvPicPr>
+                      <pic:cNvPr id="$imgIndex" name="$fileKey"/>
+                      <pic:cNvPicPr/>
+                    </pic:nvPicPr>
+                    <pic:blipFill>
+                      <a:blip r:embed="$relId"/>
+                      <a:stretch><a:fillRect/></a:stretch>
+                    </pic:blipFill>
+                    <pic:spPr>
+                      <a:xfrm>
+                        <a:off x="0" y="0"/>
+                        <a:ext cx="$cx" cy="$cy"/>
+                      </a:xfrm>
+                      <a:prstGeom prst="rect"><a:avLst/></a:prstGeom>
+                    </pic:spPr>
+                  </pic:pic>
+                </a:graphicData>
+              </a:graphic>
+            </wp:inline>
+          </w:drawing>
         </w:r>
       </w:p>
     </w:tc>
   </w:tr>
 </w:tbl>
-<w:p><w:pPr><w:spacing w:before="120" w:after="120"/></w:pPr></w:p>
+<w:p><w:pPr><w:spacing w:before="100" w:after="100"/></w:pPr></w:p>
 "@
 }
 
@@ -300,31 +341,31 @@ $bodyContent += @"
 <w:p>
   <w:pPr>
     <w:jc w:val="center"/>
-    <w:spacing w:before="200" w:after="80"/>
+    <w:spacing w:before="160" w:after="60"/>
   </w:pPr>
   <w:r>
     <w:rPr>
       <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri"/>
       <w:b/>
       <w:color w:val="1E3A8A"/>
-      <w:sz w:val="40"/>
+      <w:sz w:val="38"/>
     </w:rPr>
-    <w:t>REPORTE TÉCNICO Y EVIDENCIAS — SEMANA 12</w:t>
+    <w:t>ENTREGABLE SEMANA 12 — DRIZZLE ORM &amp; POSTGRESQL</w:t>
   </w:r>
 </w:p>
 <w:p>
   <w:pPr>
     <w:jc w:val="center"/>
-    <w:spacing w:before="40" w:after="240"/>
+    <w:spacing w:before="40" w:after="200"/>
   </w:pPr>
   <w:r>
     <w:rPr>
       <w:rFonts w:ascii="Calibri" w:hAnsi="Calibri"/>
       <w:b/>
       <w:color w:val="2563EB"/>
-      <w:sz w:val="28"/>
+      <w:sz w:val="26"/>
     </w:rPr>
-    <w:t>API HTTP en TypeScript con PostgreSQL y Migraciones Versionadas (Drizzle ORM)</w:t>
+    <w:t>API HTTP en TypeScript con PostgreSQL y Migraciones Versionadas</w:t>
   </w:r>
 </w:p>
 "@
@@ -394,32 +435,32 @@ $bodyContent += New-CodeBlock @(
 
 # 3. CAPTURAS DE LAS MIGRACIONES
 $bodyContent += New-Heading1 "3. Evidencias de Generación y Aplicación de Migraciones"
-$bodyContent += New-Paragraph "A continuación se presentan las evidencias de la puesta en marcha del contenedor PostgreSQL, la generación de la migración inicial y evolutiva con Drizzle Kit, y su aplicación automatizada mediante el script programático src/db/migrate.ts."
+$bodyContent += New-Paragraph "A continuación se presentan las capturas reales de la ejecución del contenedor PostgreSQL, la generación de la migración inicial y evolutiva con Drizzle Kit, y su aplicación automatizada mediante el script programático src/db/migrate.ts."
 
-$bodyContent += New-CaptureBox -number "CAPTURA 1" `
+$bodyContent += New-CaptureWithImage -imgIndex 1 -number "CAPTURA 1" `
     -title "Contenedor PostgreSQL 'migraciones-con-drizzleorm' en ejecución" `
     -command "docker compose up -d ; docker ps --filter `"name=migraciones-con-drizzleorm`"" `
-    -expectedDesc "La terminal mostrando el contenedor 'migraciones-con-drizzleorm' con estado 'Up' en el puerto 5435->5432/tcp."
+    -expectedDesc "El contenedor 'migraciones-con-drizzleorm' se encuentra en estado 'Up' recibiendo conexiones en el puerto 5435->5432/tcp."
 
-$bodyContent += New-CaptureBox -number "CAPTURA 2" `
+$bodyContent += New-CaptureWithImage -imgIndex 2 -number "CAPTURA 2" `
     -title "Generación de la Migración Inicial (0000_initial_products_table.sql)" `
     -command "npm run db:generate:v1" `
-    -expectedDesc "Salida de drizzle-kit generate indicando 'products 5 columns' y '[✓] Your SQL migration file ➜ drizzle\0000_initial_products_table.sql 🚀'."
+    -expectedDesc "Drizzle Kit inspecciona el esquema inicial V1 (5 columnas) y genera el archivo SQL 'drizzle\0000_initial_products_table.sql'."
 
-$bodyContent += New-CaptureBox -number "CAPTURA 3" `
+$bodyContent += New-CaptureWithImage -imgIndex 3 -number "CAPTURA 3" `
     -title "Aplicación Exitosa de la Migración Inicial en PostgreSQL" `
     -command "npm run db:migrate" `
-    -expectedDesc "Salida del script src/db/migrate.ts mostrando '✅ ¡Migraciones aplicadas exitosamente en PostgreSQL!'."
+    -expectedDesc "Ejecución sin cambios manuales aplicando la migración inicial 0000 sobre PostgreSQL."
 
-$bodyContent += New-CaptureBox -number "CAPTURA 4" `
+$bodyContent += New-CaptureWithImage -imgIndex 4 -number "CAPTURA 4" `
     -title "Generación de la Segunda Migración Evolutiva (0001_evolve_products_inventory.sql)" `
     -command "npm run schema:v2 ; npm run db:generate:v2" `
-    -expectedDesc "Salida de drizzle-kit generate indicando 'products 8 columns' y '[✓] Your SQL migration file ➜ drizzle\0001_evolve_products_inventory.sql 🚀'."
+    -expectedDesc "Tras evolucionar el esquema a 8 columnas (+stock, +sku, +updated_at), Drizzle Kit genera 'drizzle\0001_evolve_products_inventory.sql'."
 
-$bodyContent += New-CaptureBox -number "CAPTURA 5" `
+$bodyContent += New-CaptureWithImage -imgIndex 5 -number "CAPTURA 5" `
     -title "Aplicación Exitosa de la Segunda Migración Evolutiva y Archivos en Git" `
     -command "npm run db:migrate ; Get-ChildItem drizzle" `
-    -expectedDesc "Salida confirmando la aplicación exitosa de la segunda migración y el listado del directorio 'drizzle' mostrando ambos archivos 0000 y 0001."
+    -expectedDesc "Aplicación exitosa de la segunda migración sobre la tabla existente y verificación de ambos archivos SQL conservados en la carpeta drizzle/."
 
 # 4. OPERACIONES PRINCIPALES DE LA API
 $bodyContent += New-Heading1 "4. Operaciones Principales de la API HTTP y Validaciones"
@@ -433,44 +474,44 @@ $bodyContent += New-Table -headers @("Método", "Endpoint", "Operación", "Códi
     @("DELETE", "/products/:id", "Eliminar un producto por su ID", "200 OK | 400 Bad Request | 404 Not Found")
 )
 
-$bodyContent += New-CaptureBox -number "CAPTURA 6" `
+$bodyContent += New-CaptureWithImage -imgIndex 6 -number "CAPTURA 6" `
     -title "Operación CREAR Producto (POST /products -> 201 Created)" `
-    -command "curl.exe -i -X POST http://localhost:3000/products -H `"Content-Type: application/json`" -d `"{\`"name\`":\`"Laptop Gamer Pro\`",\`"description\`":\`"Laptop 32GB RAM RTX\`",\`"price\`":1299.99,\`"stock\`":15,\`"sku\`":\`"LPT-PRO-001\`"}`"" `
-    -expectedDesc "Respuesta HTTP/1.1 201 Created con el objeto JSON del producto creado en PostgreSQL (id: 1, stock: 15, sku: LPT-PRO-001)."
+    -command "curl.exe -i -X POST http://localhost:3000/products -H `"Content-Type: application/json`" -d `"{\`"name\`":\`"Laptop Gamer Pro\`",...}`"" `
+    -expectedDesc "Creación exitosa del producto retornando código HTTP 201 Created y el registro insertado con sus campos del esquema evolucionado."
 
-$bodyContent += New-CaptureBox -number "CAPTURA 7" `
+$bodyContent += New-CaptureWithImage -imgIndex 7 -number "CAPTURA 7" `
     -title "Validación de Datos Inválidos con Zod (POST /products -> 400 Bad Request)" `
     -command "curl.exe -i -X POST http://localhost:3000/products -H `"Content-Type: application/json`" -d `"{\`"name\`":\`"\`",\`"price\`":-50,\`"stock\`":-5}`"" `
-    -expectedDesc "Respuesta HTTP/1.1 400 Bad Request detallando los errores de validación detectados por Zod en name, price y stock."
+    -expectedDesc "Rechazo de datos inválidos con código HTTP 400 Bad Request detallando los errores de validación por cada atributo."
 
-$bodyContent += New-CaptureBox -number "CAPTURA 8" `
+$bodyContent += New-CaptureWithImage -imgIndex 8 -number "CAPTURA 8" `
     -title "Operación LISTAR Productos (GET /products -> 200 OK)" `
     -command "curl.exe -i http://localhost:3000/products" `
-    -expectedDesc "Respuesta HTTP/1.1 200 OK devolviendo el listado de productos almacenados y el contador total."
+    -expectedDesc "Consulta general retornando código HTTP 200 OK y el listado completo de productos almacenados en PostgreSQL."
 
-$bodyContent += New-CaptureBox -number "CAPTURA 9" `
+$bodyContent += New-CaptureWithImage -imgIndex 9 -number "CAPTURA 9" `
     -title "Operación CONSULTAR Producto por ID (GET /products/1 -> 200 OK y GET /products/999 -> 404 Not Found)" `
     -command "curl.exe -i http://localhost:3000/products/1 ; curl.exe -i http://localhost:3000/products/999" `
-    -expectedDesc "Respuesta HTTP/1.1 200 OK al consultar el ID 1 existente, seguida de HTTP/1.1 404 Not Found al consultar el ID 999 inexistente."
+    -expectedDesc "Consulta individual exitosa por ID existente (200 OK) y respuesta controlada ante un ID inexistente (404 Not Found)."
 
-$bodyContent += New-CaptureBox -number "CAPTURA 10" `
+$bodyContent += New-CaptureWithImage -imgIndex 10 -number "CAPTURA 10" `
     -title "Operación ACTUALIZAR Producto (PUT /products/1 -> 200 OK)" `
     -command "curl.exe -i -X PUT http://localhost:3000/products/1 -H `"Content-Type: application/json`" -d `"{\`"price\`":1199.50,\`"stock\`":25}`"" `
-    -expectedDesc "Respuesta HTTP/1.1 200 OK mostrando el producto actualizado con nuevo precio (1199.50), nuevo stock (25) y fecha updatedAt renovada."
+    -expectedDesc "Actualización exitosa del producto ID 1 modificando precio y stock, actualizando el sello updatedAt y respondiendo 200 OK."
 
-$bodyContent += New-CaptureBox -number "CAPTURA 11" `
+$bodyContent += New-CaptureWithImage -imgIndex 11 -number "CAPTURA 11" `
     -title "Operación ELIMINAR Producto (DELETE /products/2 -> 200 OK)" `
     -command "curl.exe -i -X DELETE http://localhost:3000/products/2" `
-    -expectedDesc "Respuesta HTTP/1.1 200 OK confirmando 'Producto eliminado exitosamente' junto con los datos del registro eliminado."
+    -expectedDesc "Eliminación del producto ID 2 en la base de datos confirmada con código HTTP 200 OK."
 
 # 5. EVIDENCIA DE PERSISTENCIA TRAS REINICIAR LA APLICACIÓN
 $bodyContent += New-Heading1 "5. Evidencia de Persistencia tras Reiniciar la Aplicación"
 $bodyContent += New-Paragraph "Dado que la API persiste todos los registros en el motor PostgreSQL dentro del contenedor Docker 'migraciones-con-drizzleorm' respaldado por el volumen 'postgres_data', la detención o reinicio del proceso de Node.js/Express no afecta la integridad ni la disponibilidad de la información almacenada."
 
-$bodyContent += New-CaptureBox -number "CAPTURA 12" `
+$bodyContent += New-CaptureWithImage -imgIndex 12 -number "CAPTURA 12" `
     -title "Reinicio del Servidor de la Aplicación y Comprobación de Persistencia (GET /products)" `
-    -command "Detener servidor (Ctrl + C), ejecutar 'npm run dev' nuevamente y consultar: curl.exe -i http://localhost:3000/products" `
-    -expectedDesc "Terminal donde se observa la detención y nuevo arranque del servidor Express, y la consulta GET /products devolviendo los registros previamente guardados en PostgreSQL."
+    -command "Detener servidor (Ctrl + C), reiniciar con 'npm run dev' y consultar: curl.exe -i http://localhost:3000/products" `
+    -expectedDesc "Tras detener y volver a iniciar la aplicación desde cero, la consulta GET /products retorna los datos intactos desde PostgreSQL."
 
 # 6. MATRIZ DE CUMPLIMIENTO DE REQUERIMIENTOS
 $bodyContent += New-Heading1 "6. Matriz de Verificación de Requerimientos (3 / 3 Puntos)"
@@ -482,12 +523,16 @@ $bodyContent += New-Table -headers @("Criterio de Evaluación", "Requerimiento",
 
 $documentXml = @"
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+            xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+            xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
+            xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+            xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
   <w:body>
     $bodyContent
     <w:sectPr>
       <w:pgSz w:w="12240" w:h="15840"/>
-      <w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="720" w:footer="720" w:gutter="0"/>
+      <w:pgMar w:top="1000" w:right="1000" w:bottom="1000" w:left="1000" w:header="720" w:footer="720" w:gutter="0"/>
     </w:sectPr>
   </w:body>
 </w:document>
@@ -498,6 +543,7 @@ $contentTypesXml = @"
 <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
   <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
   <Default Extension="xml" ContentType="application/xml"/>
+  <Default Extension="png" ContentType="image/png"/>
   <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
 </Types>
 "@
@@ -509,9 +555,21 @@ $relsXml = @"
 </Relationships>
 "@
 
+$docRelsItems = ""
+for ($i = 1; $i -le 12; $i++) {
+    $fileKey = ("captura_{0:D2}.png" -f $i)
+    $docRelsItems += "  <Relationship Id=`"rIdImg$i`" Type=`"http://schemas.openxmlformats.org/officeDocument/2006/relationships/image`" Target=`"media/$fileKey`"/>`r`n"
+}
+
+$docRelsXml = @"
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+$docRelsItems</Relationships>
+"@
+
 $zip = [System.IO.Compression.ZipFile]::Open($docxPath, [System.IO.Compression.ZipArchiveMode]::Create)
 
-function Add-ZipEntry($archive, [string]$entryName, [string]$content) {
+function Add-ZipTextEntry($archive, [string]$entryName, [string]$content) {
     $entry = $archive.CreateEntry($entryName)
     $stream = $entry.Open()
     $bytes = [System.Text.Encoding]::UTF8.GetBytes($content)
@@ -519,9 +577,18 @@ function Add-ZipEntry($archive, [string]$entryName, [string]$content) {
     $stream.Close()
 }
 
-Add-ZipEntry $zip "[Content_Types].xml" $contentTypesXml
-Add-ZipEntry $zip "_rels/.rels" $relsXml
-Add-ZipEntry $zip "word/document.xml" $documentXml
+Add-ZipTextEntry $zip "[Content_Types].xml" $contentTypesXml
+Add-ZipTextEntry $zip "_rels/.rels" $relsXml
+Add-ZipTextEntry $zip "word/document.xml" $documentXml
+Add-ZipTextEntry $zip "word/_rels/document.xml.rels" $docRelsXml
+
+for ($i = 1; $i -le 12; $i++) {
+    $fileKey = ("captura_{0:D2}.png" -f $i)
+    $imgFullPath = Join-Path $screenshotsDir $fileKey
+    if ([System.IO.File]::Exists($imgFullPath)) {
+        [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $imgFullPath, "word/media/$fileKey") | Out-Null
+    }
+}
 
 $zip.Dispose()
-Write-Host "✅ Documento Word creado exitosamente en: $docxPath"
+Write-Host "✅ Documento Word con las 12 capturas incrustadas creado en: $docxPath"
