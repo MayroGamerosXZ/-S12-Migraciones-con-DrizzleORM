@@ -7,7 +7,8 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middlewares
+// Middlewares y configuración de formato JSON legible
+app.set("json spaces", 2);
 app.use(express.json());
 
 // Logger simple de solicitudes

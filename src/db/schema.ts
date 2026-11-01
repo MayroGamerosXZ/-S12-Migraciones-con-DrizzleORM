@@ -1,5 +1,6 @@
 import { pgTable, serial, text, numeric, integer, timestamp } from "drizzle-orm/pg-core";
 
+// ESQUEMA EVOLUCIONADO (V2) - Migración 0001 (agrega stock, sku único y updated_at)
 export const products = pgTable("products", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),

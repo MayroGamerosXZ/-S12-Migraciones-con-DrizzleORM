@@ -23,9 +23,9 @@ Este proyecto consiste en una API REST desarrollada con **TypeScript**, **Expres
 ├── docker-compose.yml        # Configuración del contenedor PostgreSQL
 ├── drizzle.config.ts         # Configuración del CLI de Drizzle Kit
 ├── drizzle/                  # Directorio de migraciones SQL versionadas
-│   ├── 0000_typical_puck.sql      # Migración inicial V1 (tabla products base)
-│   ├── 0001_fresh_red_ghost.sql   # Migración evolutiva V2 (stock, sku, updated_at)
-│   └── meta/                      # Metadatos del historial de Drizzle
+│   ├── 0000_initial_products_table.sql      # Migración inicial V1 (tabla products base)
+│   ├── 0001_evolve_products_inventory.sql   # Migración evolutiva V2 (stock, sku, updated_at)
+│   └── meta/                                # Metadatos del historial de Drizzle
 ├── package.json              # Dependencias y scripts del proyecto
 ├── tsconfig.json             # Configuración del compilador TypeScript
 └── src/
@@ -94,7 +94,7 @@ docker ps
 Este proyecto utiliza migraciones versionadas sin realizar modificaciones manuales directas en la base de datos.
 
 ### Evolución del Esquema:
-1. **Migración Inicial (`0000_typical_puck.sql`):**
+1. **Migración Inicial (`0000_initial_products_table.sql`):**
    - Crea la tabla `products` con las columnas base:
      - `id`: Serial (Primary Key autoincremental).
      - `name`: Texto no nulo.
@@ -102,7 +102,7 @@ Este proyecto utiliza migraciones versionadas sin realizar modificaciones manual
      - `price`: Decimal con precisión (10, 2) no nulo.
      - `created_at`: Timestamp por defecto al momento de creación (`now()`).
 
-2. **Migración Evolutiva (`0001_fresh_red_ghost.sql`):**
+2. **Migración Evolutiva (`0001_evolve_products_inventory.sql`):**
    - Evoluciona el esquema de productos hacia un sistema de control de inventario y auditoría:
      - `stock`: Entero no nulo por defecto en `0`.
      - `sku`: Código único de inventario (`UNIQUE`).
